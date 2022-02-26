@@ -1,6 +1,6 @@
 # Notes Service
 
-Thist Tutorial shows how to secure a small REST Api with Spring Security.
+Thist Tutorial shows how to secure a small Rest API with Spring Security.
 The Rest API consists of a very simple datamodel:
 
 1. User     -> stores user information.
