@@ -1,5 +1,6 @@
 package link.timon.tutorial.sercurerest.notes.repository;
 
+import java.util.Optional;
 import link.timon.tutorial.sercurerest.notes.domain.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
@@ -10,4 +11,13 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  */
 public interface UserRepository extends MongoRepository<User, String> {
     
+    /**
+     * Searches for an user by given email;
+     * 
+     * @param email The email to search by.
+     * 
+     * @return The found user or <code>empty</code>.
+     */
+    Optional<User> findByEmail(String email);
+
 }
