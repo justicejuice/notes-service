@@ -1,10 +1,10 @@
 # Notes Service
 
-Thist Tutorial shows how to secure a small Rest API with Spring Security.
+Thist Tutorial shows how to secure a small Rest API with Spring Security and JWT.
 The Rest API consists of a very simple datamodel:
 
 1. User     -> stores user information.
-2. notes    -> stores notes created by an user. 
+2. notes    -> stores notes created by an user.
 
 We have some unprotected REST Endoints to allow an user to login or register:
 
@@ -14,7 +14,7 @@ We have some unprotected REST Endoints to allow an user to login or register:
 |api/v1/users/|GET   |email, password        |User  |Logs in an user  |
 
 We also have some resources we want to protect. So just an authenticated
-AND authorized user can access these resources: 
+AND authorized user can access these resources:
 
 |Path                            |Method|Parameters              |Result        |Description           |
 |--------------------------------|------|------------------------|--------------|----------------------|
