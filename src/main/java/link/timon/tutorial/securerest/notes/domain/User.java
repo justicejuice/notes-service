@@ -2,6 +2,7 @@ package link.timon.tutorial.securerest.notes.domain;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
@@ -45,6 +47,9 @@ public class User implements UserDetails {
 
     @Builder.Default
     private Set<Role> authorities = new HashSet<>();
+
+    @DocumentReference
+    private List<Note> notes;
 
     @Override
     public String getUsername() {
