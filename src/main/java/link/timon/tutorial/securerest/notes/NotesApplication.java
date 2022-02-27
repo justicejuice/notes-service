@@ -1,4 +1,4 @@
-package link.timon.tutorial.sercurerest.notes;
+package link.timon.tutorial.securerest.notes;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
