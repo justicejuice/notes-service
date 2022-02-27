@@ -4,10 +4,14 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import link.timon.tutorial.securerest.notes.common.EntityAlreadyExistsException;
-import link.timon.tutorial.securerest.notes.domain.dto.RegisterRequest;
+import link.timon.tutorial.securerest.notes.common.InternalServerException;
 import link.timon.tutorial.securerest.notes.domain.Role;
 import link.timon.tutorial.securerest.notes.domain.User;
+import link.timon.tutorial.securerest.notes.domain.dto.RegisterRequest;
 import link.timon.tutorial.securerest.notes.repository.UserRepository;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,14 +34,14 @@ public class UserService {
     /**
      * Registers a new User.
      *
-     * @param user The User to register.
+     * @param userToRegister The User to register.
      *
      * @return The created User.
      *
      * @throws EntityAlreadyExistsException if the user already exists.
      */
-    public Optional<User> register(RegisterRequest register) {
-        repository.findByEmail(register.getEmail()).ifPresent(u -> {
+    public Optional<User> register(RegisterRequest userToRegister) {
+        repository.findByEmail(userToRegister.getEmail()).ifPresent(u -> {
             throw new EntityAlreadyExistsException(String.format("E-Mail %s already exists.", u.getEmail()));
         });
 
@@ -45,9 +49,9 @@ public class UserService {
 
         User user = User.builder()
                 .authorities(Set.of(basicUser))
-                .email(register.getEmail())
-                .name(register.getName())
-                .password(passwordEncoder.encode(register.getPassword()))
+                .email(userToRegister.getEmail())
+                .name(userToRegister.getName())
+                .password(passwordEncoder.encode(userToRegister.getPassword()))
                 .enabled(true)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
@@ -57,16 +61,38 @@ public class UserService {
     }
 
     /**
-     * Logs in an existing user.
+     * Returns the currently logged in user. Identified by jwt stored in security context.
      *
-     * @param email The email of the user to login.
-     * @param password The password of the user to authorize.
-     *
-     * @return The User or <code>empty</code>.
+     * @return The currently logged in user or empty, if it can't be received.
      */
-    public Optional<User> login(String email, String password) {
-        // TODO implement!
-        return Optional.of(User.builder().email(email).password(password).name("IMPLEMENT!!!").build());
+    public Optional<User> getCurrentUser() {
+        SecurityContext context = SecurityContextHolder.getContext();
+
+        if (context == null) {
+            return Optional.empty();
+        }
+
+        UsernamePasswordAuthenticationToken authentication = (UsernamePasswordAuthenticationToken) context.getAuthentication();
+
+        if (authentication == null) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable((User) authentication.getPrincipal());
+    }
+
+    /**
+     * Deletes a user by given Id.
+     *
+     * @param userId The id of the user to delete.
+     */
+    public void deleteById(String userId) {
+        try {
+            repository.deleteById(userId);
+        } catch (Exception e) {
+            throw new InternalServerException(String.format("Could not delete User %s", userId), e);
+        }
+
     }
 
 }

@@ -27,7 +27,7 @@ public class JwtUtil {
 
     public String generateFor(User user) {
         return "Bearer " + Jwts.builder()
-                .setSubject(String.join("%s%s%s", user.getId(), SUBJECT_SEPERATOR, user.getUsername()))
+                .setSubject(String.format("%s%s%s", user.getId(), SUBJECT_SEPERATOR, user.getUsername()))
                 .setIssuer(ISSUER)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 60 * 60 * 1000))

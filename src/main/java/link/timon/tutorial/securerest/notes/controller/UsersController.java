@@ -2,6 +2,7 @@ package link.timon.tutorial.securerest.notes.controller;
 
 import java.util.Optional;
 import link.timon.tutorial.securerest.notes.common.RestConstants;
+import link.timon.tutorial.securerest.notes.common.UnauthorizedException;
 import link.timon.tutorial.securerest.notes.domain.User;
 import link.timon.tutorial.securerest.notes.domain.dto.LoginRequest;
 import link.timon.tutorial.securerest.notes.domain.dto.RegisterRequest;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,6 +58,19 @@ public class UsersController {
         String token = jwtUtil.generateFor(user);
 
         return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, token).body(UserView.map(user));
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> delete(@PathVariable String userId) {
+        Optional<User> currentUser = service.getCurrentUser();
+
+        if (currentUser.isEmpty() || !currentUser.get().getId().equals(userId)) {
+            throw new UnauthorizedException();
+        }
+
+        service.deleteById(userId);
+
+        return ResponseEntity.noContent().build();
     }
 
     private UsernamePasswordAuthenticationToken createPasswordToken(LoginRequest request) {

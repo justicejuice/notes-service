@@ -22,8 +22,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 /**
+ * Security configuration to use JWT in a Stateless environment.
  *
- * @author timon
+ * @author Timon
  */
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
