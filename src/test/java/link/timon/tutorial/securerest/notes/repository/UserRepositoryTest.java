@@ -1,6 +1,5 @@
 package link.timon.tutorial.securerest.notes.repository;
 
-import link.timon.tutorial.securerest.notes.repository.UserRepository;
 import java.util.Optional;
 import link.timon.tutorial.securerest.notes.domain.User;
 import org.assertj.core.api.Assertions;
