@@ -9,10 +9,10 @@ The Rest API consists of a very simple datamodel:
 # API Definition
 We have some unprotected REST Endoints to allow an user to login or register:
 
-|Path         |Method|Parameters             |Result|Description      |
-|-------------|------|-----------------------|------|-----------------|
-|api/v1/users/|POST  |email, name, password  |User  |Registers an user|
-|api/v1/users/|GET   |email, password        |User  |Logs in an user  |
+|Path                 |Method|Parameters             |Result  |Description      |
+|---------------------|------|-----------------------|--------|-----------------|
+|api/v1/users/register|POST  |email, name, password  |UserView|Registers an user|
+|api/v1/users/login   |POST  |email, password        |UserView|Logs in an user  |
 
 We also have some resources we want to protect. So just an authenticated
 AND authorized user can access these resources:
