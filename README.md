@@ -6,6 +6,7 @@ The Rest API consists of a very simple datamodel:
 1. User     -> stores user information.
 2. notes    -> stores notes created by an user.
 
+# API Definition
 We have some unprotected REST Endoints to allow an user to login or register:
 
 |Path         |Method|Parameters             |Result|Description      |
