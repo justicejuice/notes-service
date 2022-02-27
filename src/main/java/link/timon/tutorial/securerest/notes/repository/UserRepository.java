@@ -1,7 +1,7 @@
-package link.timon.tutorial.sercurerest.notes.repository;
+package link.timon.tutorial.securerest.notes.repository;
 
 import java.util.Optional;
-import link.timon.tutorial.sercurerest.notes.domain.User;
+import link.timon.tutorial.securerest.notes.domain.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**

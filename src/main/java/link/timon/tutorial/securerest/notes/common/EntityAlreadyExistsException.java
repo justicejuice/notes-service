@@ -1,4 +1,4 @@
-package link.timon.tutorial.sercurerest.notes.common;
+package link.timon.tutorial.securerest.notes.common;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
