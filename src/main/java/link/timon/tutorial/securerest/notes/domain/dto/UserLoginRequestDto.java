@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Request data for request.
+ * Dto for a login.
  *
  * @author Timon
  */
@@ -14,10 +14,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RegisterRequest {
+public class UserLoginRequestDto {
 
     private String email;
-    private String name;
     private String password;
 
 }

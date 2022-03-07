@@ -1,5 +1,7 @@
 package link.timon.tutorial.securerest.notes.repository;
 
+import java.util.ArrayList;
+import java.util.List;
 import link.timon.tutorial.securerest.notes.domain.Note;
 import link.timon.tutorial.securerest.notes.domain.User;
 import org.assertj.core.api.Assertions;
@@ -45,6 +47,7 @@ public class NoteRepositoryTest {
                 .email(USER_MAIL)
                 .name(USER_NAME)
                 .password(USER_PASSWORD)
+                .notes(List.of())
                 .build());
     }
 
@@ -67,7 +70,13 @@ public class NoteRepositoryTest {
         noteRepository.save(Note.builder().author(user).title("title 2").text("text 2").build());
         noteRepository.save(Note.builder().author(anotherUser).title("title 3").text("text 3").build());
 
-        Assertions.assertThat(noteRepository.findByAuthor(user)).hasSize(2);
+        List<Note> result = new ArrayList<>(noteRepository.findByAuthor(user));
+
+        Assertions.assertThat(result).hasSize(2);
+        Assertions.assertThat(result.get(0).getAuthor()).isEqualTo(user);
+        Assertions.assertThat(result.get(0).getTitle()).isEqualTo("title 1");
+        Assertions.assertThat(result.get(1).getAuthor()).isEqualTo(user);
+        Assertions.assertThat(result.get(1).getTitle()).isEqualTo("title 2");
     }
 
 }

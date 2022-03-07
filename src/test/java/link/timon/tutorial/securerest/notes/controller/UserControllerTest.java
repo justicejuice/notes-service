@@ -1,8 +1,8 @@
 package link.timon.tutorial.securerest.notes.controller;
 
 import link.timon.tutorial.securerest.notes.common.RestConstants;
-import link.timon.tutorial.securerest.notes.domain.dto.LoginRequest;
-import link.timon.tutorial.securerest.notes.domain.dto.RegisterRequest;
+import link.timon.tutorial.securerest.notes.domain.dto.UserLoginRequestDto;
+import link.timon.tutorial.securerest.notes.domain.dto.UserRegisterRequestDto;
 import link.timon.tutorial.securerest.notes.domain.dto.UserView;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -133,7 +133,7 @@ public class UserControllerTest {
     private ResponseEntity<UserView> login(String mail, String password) {
         String loginUrl = getUrl("/login");
 
-        LoginRequest loginRequest = LoginRequest.builder()
+        UserLoginRequestDto loginRequest = UserLoginRequestDto.builder()
                 .email(mail)
                 .password(password)
                 .build();
@@ -144,7 +144,7 @@ public class UserControllerTest {
     private ResponseEntity<UserView> register(String mail, String password, String name) {
         String registerUrl = getUrl("/register");
 
-        RegisterRequest registerRequest = RegisterRequest.builder()
+        UserRegisterRequestDto registerRequest = UserRegisterRequestDto.builder()
                 .email(mail)
                 .password(password)
                 .name(name)

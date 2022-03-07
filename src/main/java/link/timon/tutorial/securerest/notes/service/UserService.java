@@ -5,14 +5,14 @@ import java.util.Optional;
 import java.util.Set;
 import link.timon.tutorial.securerest.notes.common.EntityAlreadyExistsException;
 import link.timon.tutorial.securerest.notes.common.InternalServerException;
+import link.timon.tutorial.securerest.notes.common.UnauthorizedException;
 import link.timon.tutorial.securerest.notes.domain.Role;
 import link.timon.tutorial.securerest.notes.domain.User;
-import link.timon.tutorial.securerest.notes.domain.dto.RegisterRequest;
+import link.timon.tutorial.securerest.notes.domain.dto.UserRegisterRequestDto;
 import link.timon.tutorial.securerest.notes.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,15 +21,11 @@ import org.springframework.stereotype.Service;
  * @author Timon
  */
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
-        this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final SecurityService securityService;
 
     /**
      * Registers a new User.
@@ -40,7 +36,7 @@ public class UserService {
      *
      * @throws EntityAlreadyExistsException if the user already exists.
      */
-    public Optional<User> register(RegisterRequest userToRegister) {
+    public Optional<User> register(UserRegisterRequestDto userToRegister) {
         repository.findByEmail(userToRegister.getEmail()).ifPresent(u -> {
             throw new EntityAlreadyExistsException(String.format("E-Mail %s already exists.", u.getEmail()));
         });
@@ -51,7 +47,7 @@ public class UserService {
                 .authorities(Set.of(basicUser))
                 .email(userToRegister.getEmail())
                 .name(userToRegister.getName())
-                .password(passwordEncoder.encode(userToRegister.getPassword()))
+                .password(securityService.createUserPassword(userToRegister.getPassword()))
                 .enabled(true)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
@@ -61,24 +57,39 @@ public class UserService {
     }
 
     /**
-     * Returns the currently logged in user. Identified by jwt stored in security context.
+     * Returns the currently logged in user. Identified by jwt stored in
+     * security context.
      *
      * @return The currently logged in user or empty, if it can't be received.
      */
     public Optional<User> getCurrentUser() {
-        SecurityContext context = SecurityContextHolder.getContext();
+        Optional<UsernamePasswordAuthenticationToken> token = securityService.getAuthenticationToken();
 
-        if (context == null) {
-            return Optional.empty();
+        if (token.isPresent()) {
+            return Optional.ofNullable((User) token.get().getPrincipal());
         }
 
-        UsernamePasswordAuthenticationToken authentication = (UsernamePasswordAuthenticationToken) context.getAuthentication();
+        return Optional.empty();
+    }
 
-        if (authentication == null) {
-            return Optional.empty();
+    /**
+     * Gets the currently logged in User and checks if he is authorized for
+     * operating of given user ids entities. If he is authorized, the User
+     * entity will be returned. If he is not authorized an Unauthorized
+     * exception will be thrown.
+     *
+     * @param userId The User Id to check.
+     *
+     * @return The user if he is authorized.
+     */
+    public Optional<User> getCurrentUserAuthorized(String userId) {
+        Optional<User> currentUser = getCurrentUser();
+
+        if (currentUser.isEmpty() || StringUtils.equals(userId, currentUser.get().getId())) {
+            throw new UnauthorizedException(String.format("User witth Id=%s is not authorized for this request", userId));
         }
 
-        return Optional.ofNullable((User) authentication.getPrincipal());
+        return currentUser;
     }
 
     /**
@@ -89,10 +100,21 @@ public class UserService {
     public void deleteById(String userId) {
         try {
             repository.deleteById(userId);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new InternalServerException(String.format("Could not delete User %s", userId), e);
         }
+    }
 
+    /**
+     * Saves The given user in repository.
+     *
+     * @param user The User to save.
+     *
+     * @return The saved User. Can be empty.
+     */
+    Optional<User> save(User user) {
+        return Optional.ofNullable(repository.save(user));
     }
 
 }

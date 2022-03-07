@@ -2,13 +2,13 @@ package link.timon.tutorial.securerest.notes.service;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import link.timon.tutorial.securerest.notes.domain.Note;
 import link.timon.tutorial.securerest.notes.domain.User;
 import link.timon.tutorial.securerest.notes.domain.dto.NoteView;
 import link.timon.tutorial.securerest.notes.repository.NoteRepository;
-import link.timon.tutorial.securerest.notes.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +22,17 @@ import org.springframework.stereotype.Service;
 public class NoteService {
 
     private final NoteRepository noteRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public Optional<NoteView> save(User user, NoteView noteView) {
+    public Optional<NoteView> save(String userId, NoteView noteView) {
+        Optional<User> userOptional = userService.getCurrentUserAuthorized(userId);
+
+        if (userOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        User user = userOptional.get();
+
         Note note = Note.builder()
                 .author(user)
                 .createdAt(LocalDateTime.now())
@@ -34,7 +42,7 @@ public class NoteService {
                 .build();
 
         user.getNotes().add(note);
-        userRepository.save(user);
+        userService.save(user);
 
         Note savedNote = noteRepository.save(note);
 
@@ -55,8 +63,14 @@ public class NoteService {
         return Optional.ofNullable(noteRepository.save(note));
     }
 
-    public Collection<NoteView> findAllForUser(User user) {
-        return noteRepository.findByAuthor(user)
+    public Collection<NoteView> findAllForUser(String userId) {
+        Optional<User> user = userService.getCurrentUserAuthorized(userId);
+
+        if (user.isEmpty()) {
+            return List.of();
+        }
+
+        return noteRepository.findByAuthor(user.get())
                 .stream()
                 .map(fetchedNote -> NoteView.builder()
                 .createdAt(fetchedNote.getCreatedAt())
@@ -74,7 +88,7 @@ public class NoteService {
 
     public void delete(User user, String noteId) {
         user.getNotes().removeIf((n) -> n.getId().equalsIgnoreCase(noteId));
-        userRepository.save(user);
+        userService.save(user);
 
         noteRepository.deleteById(noteId);
     }
