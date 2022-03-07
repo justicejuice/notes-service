@@ -1,6 +1,5 @@
 package link.timon.tutorial.securerest.notes.repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import link.timon.tutorial.securerest.notes.domain.Note;
 import link.timon.tutorial.securerest.notes.domain.User;
@@ -70,7 +69,7 @@ public class NoteRepositoryTest {
         noteRepository.save(Note.builder().author(user).title("title 2").text("text 2").build());
         noteRepository.save(Note.builder().author(anotherUser).title("title 3").text("text 3").build());
 
-        List<Note> result = new ArrayList<>(noteRepository.findByAuthor(user));
+        List<Note> result = noteRepository.findByAuthor(user);
 
         Assertions.assertThat(result).hasSize(2);
         Assertions.assertThat(result.get(0).getAuthor()).isEqualTo(user);

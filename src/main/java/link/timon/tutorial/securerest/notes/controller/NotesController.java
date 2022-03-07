@@ -27,6 +27,6 @@ public class NotesController {
 
     @PostMapping
     public ResponseEntity<NoteView> create(@PathVariable String userId, @RequestBody NoteView note) {
-        return ResponseEntity.of(noteService.save(userId, note));
+        return ResponseEntity.of(noteService.create(userId, note));
     }
 }

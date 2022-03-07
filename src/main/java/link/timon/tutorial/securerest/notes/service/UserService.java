@@ -82,14 +82,27 @@ public class UserService {
      *
      * @return The user if he is authorized.
      */
-    public Optional<User> getCurrentUserAuthorized(String userId) {
+    public User getCurrentUserAuthorized(String userId) {
         Optional<User> currentUser = getCurrentUser();
 
         if (currentUser.isEmpty() || StringUtils.equals(userId, currentUser.get().getId())) {
             throw new UnauthorizedException(String.format("User witth Id=%s is not authorized for this request", userId));
         }
 
-        return currentUser;
+        return currentUser.get();
+    }
+
+    /**
+     * Checks if given userId is authorized to perform the desired action.
+     *
+     * @param userId The user to check.
+     *
+     * @throws UnauthorizedException.
+     */
+    void checkCurrentuserAuthorized(String userId) {
+        // This call throws unauthorized Exception if the
+        // the current user is unauthorized.
+        getCurrentUserAuthorized(userId);
     }
 
     /**

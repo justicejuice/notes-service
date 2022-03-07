@@ -2,14 +2,21 @@ package link.timon.tutorial.securerest.notes.domain.dto;
 
 import link.timon.tutorial.securerest.notes.domain.User;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper for User -> UserView and reverse.
  *
  * @author Timon Link
  */
-@Mapper(componentModel = "spring")
+@Mapper(
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
 public interface UserViewMapper {
+
+    UserViewMapper INSTANCE = Mappers.getMapper(UserViewMapper.class);
 
     /**
      * Maps given User to UserView.
@@ -18,7 +25,7 @@ public interface UserViewMapper {
      *
      * @return The createdUserview.
      */
-    UserView map(User user);
+    UserView modelToView(User user);
 
     /**
      * Maps given UserView to User.
@@ -27,6 +34,6 @@ public interface UserViewMapper {
      *
      * @return The mapped User.
      */
-    User map(UserView userView);
+    User viewToModel(UserView userView);
 
 }

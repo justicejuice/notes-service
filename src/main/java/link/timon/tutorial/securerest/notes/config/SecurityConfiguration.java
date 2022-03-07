@@ -1,10 +1,11 @@
-package link.timon.tutorial.securerest.notes.security;
+package link.timon.tutorial.securerest.notes.config;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import link.timon.tutorial.securerest.notes.common.EntityNotFoundException;
 import link.timon.tutorial.securerest.notes.common.RestConstants;
 import link.timon.tutorial.securerest.notes.repository.UserRepository;
+import link.timon.tutorial.securerest.notes.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;

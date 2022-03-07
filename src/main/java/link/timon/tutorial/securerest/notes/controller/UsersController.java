@@ -44,7 +44,7 @@ public class UsersController {
         Optional<User> registeredUser = service.register(user);
 
         if (registeredUser.isPresent()) {
-            return ResponseEntity.ok(mapper.map(registeredUser.get()));
+            return ResponseEntity.ok(mapper.modelToView(registeredUser.get()));
         }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -59,7 +59,7 @@ public class UsersController {
 
         String token = jwtUtil.generateFor(user);
 
-        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, token).body(mapper.map(user));
+        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, token).body(mapper.modelToView(user));
     }
 
     @DeleteMapping("/{userId}")
