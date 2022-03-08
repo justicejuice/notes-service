@@ -1,14 +1,15 @@
 package link.timon.tutorial.securerest.notes.service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import link.timon.tutorial.securerest.notes.common.EntityAlreadyExistsException;
-import link.timon.tutorial.securerest.notes.common.InternalServerException;
 import link.timon.tutorial.securerest.notes.common.UnauthorizedException;
 import link.timon.tutorial.securerest.notes.domain.Role;
 import link.timon.tutorial.securerest.notes.domain.User;
+import link.timon.tutorial.securerest.notes.domain.dto.UserLoginRequestDto;
 import link.timon.tutorial.securerest.notes.domain.dto.UserRegisterRequestDto;
+import link.timon.tutorial.securerest.notes.domain.dto.UserView;
+import link.timon.tutorial.securerest.notes.domain.dto.UserViewMapper;
 import link.timon.tutorial.securerest.notes.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +37,7 @@ public class UserService {
      *
      * @throws EntityAlreadyExistsException if the user already exists.
      */
-    public Optional<User> register(UserRegisterRequestDto userToRegister) {
+    public Optional<UserView> register(UserRegisterRequestDto userToRegister) {
         repository.findByEmail(userToRegister.getEmail()).ifPresent(u -> {
             throw new EntityAlreadyExistsException(String.format("E-Mail %s already exists.", u.getEmail()));
         });
@@ -49,11 +50,20 @@ public class UserService {
                 .name(userToRegister.getName())
                 .password(securityService.createUserPassword(userToRegister.getPassword()))
                 .enabled(true)
-                .createdAt(LocalDateTime.now())
-                .modifiedAt(LocalDateTime.now())
                 .build();
 
-        return Optional.ofNullable(repository.save(user));
+        return Optional.ofNullable(UserViewMapper.INSTANCE.modelToView(repository.save(user)));
+    }
+
+    /**
+     * Performs a login and returns the authenticated user.
+     *
+     * @param login The login request.
+     * @return The UserView of authenticated user.
+     */
+    public Optional<UserView> login(UserLoginRequestDto login) {
+        User user = (User) securityService.authenticate(login);
+        return Optional.ofNullable(UserViewMapper.INSTANCE.modelToView(user));
     }
 
     /**
@@ -62,7 +72,7 @@ public class UserService {
      *
      * @return The currently logged in user or empty, if it can't be received.
      */
-    public Optional<User> getCurrentUser() {
+    public Optional<User> getAuthenticatedUser() {
         Optional<UsernamePasswordAuthenticationToken> token = securityService.getAuthenticationToken();
 
         if (token.isPresent()) {
@@ -83,9 +93,9 @@ public class UserService {
      * @return The user if he is authorized.
      */
     public User getCurrentUserAuthorized(String userId) {
-        Optional<User> currentUser = getCurrentUser();
+        Optional<User> currentUser = getAuthenticatedUser();
 
-        if (currentUser.isEmpty() || StringUtils.equals(userId, currentUser.get().getId())) {
+        if (currentUser.isEmpty() || !StringUtils.equals(userId, currentUser.get().getId())) {
             throw new UnauthorizedException(String.format("User witth Id=%s is not authorized for this request", userId));
         }
 
@@ -111,12 +121,8 @@ public class UserService {
      * @param userId The id of the user to delete.
      */
     public void deleteById(String userId) {
-        try {
-            repository.deleteById(userId);
-        }
-        catch (Exception e) {
-            throw new InternalServerException(String.format("Could not delete User %s", userId), e);
-        }
+        checkCurrentuserAuthorized(userId);
+        repository.deleteById(userId);
     }
 
     /**

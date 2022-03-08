@@ -6,8 +6,10 @@ import link.timon.tutorial.securerest.notes.common.EntityAlreadyExistsException;
 import link.timon.tutorial.securerest.notes.domain.Role;
 import link.timon.tutorial.securerest.notes.domain.User;
 import link.timon.tutorial.securerest.notes.domain.dto.UserRegisterRequestDto;
+import link.timon.tutorial.securerest.notes.domain.dto.UserView;
 import link.timon.tutorial.securerest.notes.repository.UserRepository;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,6 +34,7 @@ public class UserServiceTest {
     private UserService service;
 
     @Test
+    @DisplayName("Should Register a new user.")
     public void shouldRegister() {
         UserRegisterRequestDto user = testRegisterRequest();
 
@@ -39,12 +42,13 @@ public class UserServiceTest {
         Mockito.when(repository.findByEmail(Mockito.any())).thenReturn(Optional.empty());
         Mockito.when(repository.save(Mockito.any())).thenReturn(createdTestUser());
 
-        Optional<User> result = service.register(user);
+        Optional<UserView> result = service.register(user);
 
         Assertions.assertThat(result).isPresent();
     }
 
     @Test
+    @DisplayName("Should not register a user if the e-mail allready exists.")
     public void shouldNotRegisterBecauseEmailExists() {
         UserRegisterRequestDto user = testRegisterRequest();
 

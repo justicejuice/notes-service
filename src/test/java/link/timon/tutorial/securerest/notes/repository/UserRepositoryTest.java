@@ -5,10 +5,12 @@ import link.timon.tutorial.securerest.notes.domain.User;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
@@ -16,6 +18,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
+@EnableMongoAuditing
 @DataMongoTest(excludeAutoConfiguration = EmbeddedMongoAutoConfiguration.class)
 public class UserRepositoryTest {
 
@@ -49,14 +52,17 @@ public class UserRepositoryTest {
     }
 
     @Test
+    @DisplayName("Should save a new user.")
     public void shouldSaveNew() {
         User result = repository.save(User.builder().email("test@test.de").build());
 
         Assertions.assertThat(result.getId()).isNotBlank();
         Assertions.assertThat(result.getEmail()).isEqualTo("test@test.de");
+        Assertions.assertThat(result.getCreatedAt()).isNotNull();
     }
 
     @Test
+    @DisplayName("Should find users by email.")
     public void shouldFindByEmail() {
         Optional<User> result = repository.findByEmail(USER_MAIL);
 
@@ -68,12 +74,14 @@ public class UserRepositoryTest {
     }
 
     @Test
+    @DisplayName("Should not find any user when email is unknown.")
     public void shouldNotFindByMailWhenNotExists() {
         Optional<User> result = repository.findByEmail("test@test.de");
         Assertions.assertThat(result).isEmpty();
     }
 
     @Test
+    @DisplayName("Should update values of users after save.")
     public void shouldUpdate() {
         User user = repository.findAll().get(0);
 

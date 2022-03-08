@@ -6,10 +6,12 @@ import link.timon.tutorial.securerest.notes.domain.User;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
@@ -18,6 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
 @DataMongoTest(excludeAutoConfiguration = EmbeddedMongoAutoConfiguration.class)
+@EnableMongoAuditing
 public class NoteRepositoryTest {
 
     private static final String USER_NAME = "Hans Maulwurf";
@@ -57,11 +60,13 @@ public class NoteRepositoryTest {
     }
 
     @Test
+    @DisplayName("Should not find a note, when when the user has no note yet.")
     public void shouldNotFindAnyNote() {
         Assertions.assertThat(noteRepository.findByAuthor(user)).isEmpty();
     }
 
     @Test
+    @DisplayName("Should find all notes of an user.")
     public void shouldFindTwoNotesForUser() {
         final User anotherUser = User.builder().email("te@mail.de").name("Dex").password("pw").build();
 
@@ -76,6 +81,7 @@ public class NoteRepositoryTest {
         Assertions.assertThat(result.get(0).getTitle()).isEqualTo("title 1");
         Assertions.assertThat(result.get(1).getAuthor()).isEqualTo(user);
         Assertions.assertThat(result.get(1).getTitle()).isEqualTo("title 2");
+        Assertions.assertThat(result.get(1).getCreatedAt()).isNotNull();
     }
 
 }

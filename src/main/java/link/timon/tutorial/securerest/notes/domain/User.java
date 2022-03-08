@@ -24,7 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Data
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = {"createdAt", "modifiedAt"})
 @Document(collection = "users")
 public class User implements UserDetails {
 
