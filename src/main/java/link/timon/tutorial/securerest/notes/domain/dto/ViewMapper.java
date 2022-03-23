@@ -2,22 +2,43 @@ package link.timon.tutorial.securerest.notes.domain.dto;
 
 import java.util.List;
 import link.timon.tutorial.securerest.notes.domain.Note;
+import link.timon.tutorial.securerest.notes.domain.User;
 import org.mapstruct.Mapper;
+import org.mapstruct.NullValueMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
 /**
- * Maps the Note to NoteView and reverse.
+ * Mapper for User -> UserView and reverse.
  *
  * @author Timon Link
  */
 @Mapper(
         componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.IGNORE
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        nullValueMappingStrategy = NullValueMappingStrategy.RETURN_NULL
 )
-public interface NoteViewMapper {
+public interface ViewMapper {
 
-    NoteViewMapper INSTANCE = Mappers.getMapper(NoteViewMapper.class);
+    ViewMapper INSTANCE = Mappers.getMapper(ViewMapper.class);
+
+    /**
+     * Maps given User to UserView.
+     *
+     * @param user The User to Map.
+     *
+     * @return The createdUserview.
+     */
+    UserView userToView(User user);
+
+    /**
+     * Maps given UserView to User.
+     *
+     * @param userView The UserView to map.
+     *
+     * @return The mapped User.
+     */
+    User userViewToModel(UserView userView);
 
     /**
      * Maps given Note to NoteView.
@@ -26,7 +47,7 @@ public interface NoteViewMapper {
      *
      * @return The created NoteView.
      */
-    NoteView modelToView(Note note);
+    NoteView noteToView(Note note);
 
     /**
      * Maps given List of Notes to a List of NoteViews.
@@ -35,7 +56,7 @@ public interface NoteViewMapper {
      *
      * @return The mapped NoteViews.
      */
-    List<NoteView> modelsToViews(List<Note> notes);
+    List<NoteView> notesToViews(List<Note> notes);
 
     /**
      * Maps a given NoteView to Note.
@@ -44,7 +65,7 @@ public interface NoteViewMapper {
      *
      * @return The created Note.
      */
-    Note viewToModel(NoteView noteView);
+    Note noteViewToModel(NoteView noteView);
 
     /**
      * Maps given List of NoteViews to List of Notes.
@@ -53,6 +74,6 @@ public interface NoteViewMapper {
      *
      * @return The mapped Notes.
      */
-    List<Note> viewsToModels(List<NoteView> noteViews);
+    List<Note> noteViewsToModels(List<NoteView> noteViews);
 
 }

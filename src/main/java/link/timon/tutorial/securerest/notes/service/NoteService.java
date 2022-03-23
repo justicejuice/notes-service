@@ -6,7 +6,7 @@ import link.timon.tutorial.securerest.notes.common.EntityNotFoundException;
 import link.timon.tutorial.securerest.notes.domain.Note;
 import link.timon.tutorial.securerest.notes.domain.User;
 import link.timon.tutorial.securerest.notes.domain.dto.NoteView;
-import link.timon.tutorial.securerest.notes.domain.dto.NoteViewMapper;
+import link.timon.tutorial.securerest.notes.domain.dto.ViewMapper;
 import link.timon.tutorial.securerest.notes.repository.NoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,15 +33,13 @@ public class NoteService {
      */
     public Optional<NoteView> create(String userId, NoteView noteView) {
         User user = userService.getCurrentUserAuthorized(userId);
-        Note note = NoteViewMapper.INSTANCE.viewToModel(noteView);
+        Note note = ViewMapper.INSTANCE.noteViewToModel(noteView);
 
         note.setAuthor(user);
 
         updateUserNotes(user, note);
 
-        return Optional.of(
-                NoteViewMapper.INSTANCE.modelToView(noteRepository.save(note))
-        );
+        return Optional.ofNullable(ViewMapper.INSTANCE.noteToView(noteRepository.save(note)));
     }
 
     /**
@@ -55,10 +53,10 @@ public class NoteService {
     public Optional<NoteView> update(String userId, NoteView noteView) {
         userService.checkCurrentuserAuthorized(userId);
 
-        Note note = NoteViewMapper.INSTANCE.viewToModel(noteView);
+        Note note = ViewMapper.INSTANCE.noteViewToModel(noteView);
         Note saved = noteRepository.save(note);
 
-        return Optional.ofNullable(NoteViewMapper.INSTANCE.modelToView(saved));
+        return Optional.ofNullable(ViewMapper.INSTANCE.noteToView(saved));
     }
 
     /**
@@ -71,7 +69,7 @@ public class NoteService {
     public Collection<NoteView> findAllForUser(String userId) {
         User user = userService.getCurrentUserAuthorized(userId);
 
-        return NoteViewMapper.INSTANCE.modelsToViews(noteRepository.findByAuthor(user));
+        return ViewMapper.INSTANCE.notesToViews(noteRepository.findByAuthor(user));
     }
 
     /**
@@ -90,7 +88,7 @@ public class NoteService {
 
         }
 
-        return Optional.ofNullable(NoteViewMapper.INSTANCE.modelToView(note.get()));
+        return Optional.ofNullable(ViewMapper.INSTANCE.noteToView(note.get()));
     }
 
     /**

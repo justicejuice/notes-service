@@ -5,20 +5,19 @@ import link.timon.tutorial.securerest.notes.common.RestConstants;
 import link.timon.tutorial.securerest.notes.domain.dto.UserLoginRequestDto;
 import link.timon.tutorial.securerest.notes.domain.dto.UserRegisterRequestDto;
 import link.timon.tutorial.securerest.notes.domain.dto.UserView;
-import link.timon.tutorial.securerest.notes.domain.dto.UserViewMapper;
 import link.timon.tutorial.securerest.notes.security.JwtUtil;
 import link.timon.tutorial.securerest.notes.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import link.timon.tutorial.securerest.notes.domain.dto.ViewMapper;
 
 /**
  * RestController for user resource.
@@ -46,7 +45,7 @@ public class UsersController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String token = jwtUtil.generateFor(UserViewMapper.INSTANCE.viewToModel(user.get()));
+        String token = jwtUtil.generateFor(ViewMapper.INSTANCE.userViewToModel(user.get()));
 
         return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, token).body(user.get());
     }
@@ -55,10 +54,6 @@ public class UsersController {
     public ResponseEntity<Void> delete(@PathVariable String userId) {
         service.deleteById(userId);
         return ResponseEntity.noContent().build();
-    }
-
-    private UsernamePasswordAuthenticationToken createPasswordToken(UserLoginRequestDto request) {
-        return new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
     }
 
 }

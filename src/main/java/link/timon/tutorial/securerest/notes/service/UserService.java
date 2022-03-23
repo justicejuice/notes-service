@@ -9,12 +9,13 @@ import link.timon.tutorial.securerest.notes.domain.User;
 import link.timon.tutorial.securerest.notes.domain.dto.UserLoginRequestDto;
 import link.timon.tutorial.securerest.notes.domain.dto.UserRegisterRequestDto;
 import link.timon.tutorial.securerest.notes.domain.dto.UserView;
-import link.timon.tutorial.securerest.notes.domain.dto.UserViewMapper;
 import link.timon.tutorial.securerest.notes.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import link.timon.tutorial.securerest.notes.domain.dto.ViewMapper;
 
 /**
  * Service for user entity.
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository repository;
@@ -52,7 +54,7 @@ public class UserService {
                 .enabled(true)
                 .build();
 
-        return Optional.ofNullable(UserViewMapper.INSTANCE.modelToView(repository.save(user)));
+        return Optional.ofNullable(ViewMapper.INSTANCE.userToView(repository.save(user)));
     }
 
     /**
@@ -63,7 +65,9 @@ public class UserService {
      */
     public Optional<UserView> login(UserLoginRequestDto login) {
         User user = (User) securityService.authenticate(login);
-        return Optional.ofNullable(UserViewMapper.INSTANCE.modelToView(user));
+        log.info("Logged in User: {}", user);
+        log.info("Users notes: {}", user.getNotes());
+        return Optional.ofNullable(ViewMapper.INSTANCE.userToView(user));
     }
 
     /**

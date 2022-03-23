@@ -24,7 +24,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Since this is a Integration test for jwt functionality, we create a whole Web Environment and mongo container.
+ * Since this is a Integration test for JWT functionality, we create a whole Web
+ * Environment and mongo container.
  *
  * @author Timon
  */

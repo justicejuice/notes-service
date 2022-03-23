@@ -49,7 +49,6 @@ public class NoteRepositoryTest {
                 .email(USER_MAIL)
                 .name(USER_NAME)
                 .password(USER_PASSWORD)
-                .notes(List.of())
                 .build());
     }
 
