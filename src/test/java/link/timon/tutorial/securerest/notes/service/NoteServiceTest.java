@@ -18,6 +18,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 public class NoteServiceTest {
 
@@ -53,22 +56,58 @@ public class NoteServiceTest {
 
         Note model = ViewMapper.INSTANCE.noteViewToModel(toCreate);
 
-        Mockito.when(noteRepository.save(Mockito.any())).thenReturn(model);
-        Mockito.when(userService.getAuthenticatedUser()).thenReturn(Optional.of(AUTHENTICATED_USER));
+        when(noteRepository.save(any())).thenReturn(model);
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.of(AUTHENTICATED_USER));
         Optional<NoteView> result = testee.create(toCreate);
 
-        Assertions.assertThat(result).isPresent();
-        Assertions.assertThat(result.get().getTitle()).isEqualTo(toCreate.getTitle());
-        Assertions.assertThat(AUTHENTICATED_USER.getNotes()).hasSize(1);
+        assertThat(result).isPresent();
+        assertThat(result.get().getTitle()).isEqualTo(toCreate.getTitle());
+        assertThat(AUTHENTICATED_USER.getNotes()).hasSize(1);
     }
 
     @Test
     @DisplayName("Should not create when user not authenticated")
     public void shouldNotCreate() {
-        Mockito.when(userService.getAuthenticatedUser()).thenReturn(Optional.empty());
-        Assertions.assertThatExceptionOfType(UnauthorizedException.class).isThrownBy(() ->
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.empty());
+        assertThatExceptionOfType(UnauthorizedException.class).isThrownBy(() ->
                 testee.create(NoteView.builder().build())
         );
+    }
+
+    @Test
+    @DisplayName("Should Update Note.")
+    public void shouldUpdate() {
+        User author = User.builder().id("1").build();
+
+        NoteView toUpdate = NoteView.builder()
+                .id("1")
+                .text("test")
+                .title("test")
+                .build();
+
+        Note existingNote = ViewMapper.INSTANCE.noteViewToModel(toUpdate);
+        existingNote.setAuthor(author);
+        existingNote.setTitle("psst.");
+
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.of(author));
+        when(noteRepository.findById(toUpdate.getId())).thenReturn(Optional.of(existingNote));
+        when(noteRepository.save(existingNote)).thenReturn(existingNote);
+
+        Optional<NoteView> updated = testee.update(toUpdate);
+
+        assertThat(updated).isPresent();
+        assertThat(updated.get().getTitle()).isEqualTo("test");
+    }
+
+    @Test
+    @DisplayName("Should not update when user not authenticated.")
+    public void shouldNotUpdate() {
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.empty());
+        when(noteRepository.findById("1")).thenReturn(Optional.of(Note.builder().id("1").build()));
+
+        assertThatExceptionOfType(UnauthorizedException.class)
+                .isThrownBy(() -> testee.update(NoteView.builder().id("1").build()))
+                .withMessage("401 UNAUTHORIZED \"You are not allowed to update this note!\"");
     }
 
 }

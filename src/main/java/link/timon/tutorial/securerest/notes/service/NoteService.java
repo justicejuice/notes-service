@@ -56,8 +56,21 @@ public class NoteService {
      * @return The updated NoteView
      */
     public Optional<NoteView> update(NoteView noteView) {
-        Note note = ViewMapper.INSTANCE.noteViewToModel(noteView);
-        Note saved = noteRepository.save(note);
+        Optional<User> authenticatedUser = userService.getAuthenticatedUser();
+        Optional<Note> noteToUpdate = noteRepository.findById(noteView.getId());
+
+        if (noteToUpdate.isEmpty()) {
+            throw new EntityNotFoundException(String.format("Note with id=%s does not exist!", noteView.getId()));
+        }
+
+        if (authenticatedUser.isEmpty() || !authenticatedUser.get().getId().equals(noteToUpdate.get().getId())) {
+            throw new UnauthorizedException("You are not allowed to update this note!");
+        }
+
+        noteToUpdate.get().setTitle(noteView.getTitle());
+        noteToUpdate.get().setText(noteView.getText());
+
+        Note saved = noteRepository.save(noteToUpdate.get());
 
         return Optional.ofNullable(ViewMapper.INSTANCE.noteToView(saved));
     }
