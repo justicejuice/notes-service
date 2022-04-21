@@ -17,11 +17,11 @@ We have some unprotected REST Endoints to allow an user to login or register:
 We also have some resources we want to protect. So just an authenticated
 AND authorized user can access these resources:
 
-|Path                            |Method|Parameters              |Result        |Description           |
-|--------------------------------|------|------------------------|--------------|----------------------|
-|api/v1/users/{id}               |DELETE|id                      |empty         |Registers an user     |
-|api/v1/users/{id}/notes         |GET   |id of user              |List of notes |All notes of an user  |
-|api/v1/users/{id}/notes/{noteId}|GET   |id of user, noteId      |note          |A notes of an user    |
-|api/v1/users/{id}/notes         |POST  |id of user, note        |created note  |Creates a new note    |
-|api/v1/users/{id}/notes/{noteId}|PUT   |id of user, noteId, note|updated note  |Updates a given note  |
-|api/v1/users/{id}/notes/{noteId}|DELETE|id of user, noteId      |empty         |Deletes a note        |
+| Path                  |Method| Parameters   |Result        | Description                                 |
+|-----------------------|------|--------------|--------------|---------------------------------------------|
+| api/v1/users/{id}     |DELETE| id           |empty         | Deletes an user                             |
+| api/v1/notes          |GET   |              |List of notes | All notes of authenticated user             |
+| api/v1/notes/{noteId} |GET   | noteId       |note          | Specific note of authenticated user         |
+| api/v1/notes          |POST  | note         |created note  | Creates a new note for authenticated user   |
+| api/v1/notes/{noteId} |PUT   | noteId, note |updated note  | Updates a given note for authenticated user |
+| api/v1/notes/{noteId} |DELETE| noteId       |empty         | Deletes a note of authenticated user        |
