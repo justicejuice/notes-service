@@ -111,7 +111,7 @@ public class UserService {
      *
      * @param userId The user to check.
      *
-     * @throws UnauthorizedException.
+     * @throws UnauthorizedException when given userId is not the current authorized user.
      */
     void checkCurrentuserAuthorized(String userId) {
         // This call throws unauthorized Exception if the
@@ -137,7 +137,7 @@ public class UserService {
      * @return The saved User. Can be empty.
      */
     Optional<User> save(User user) {
-        return Optional.ofNullable(repository.save(user));
+        return Optional.of(repository.save(user));
     }
 
 }
