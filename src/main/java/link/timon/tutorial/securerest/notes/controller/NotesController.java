@@ -15,18 +15,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(RestConstants.API_V1 + "/users/{userId}/notes")
+@RequestMapping(RestConstants.API_V1 + "/notes")
 public class NotesController {
 
     private final NoteService noteService;
 
     @GetMapping
-    public ResponseEntity<Collection<NoteView>> findAll(@PathVariable String userId) {
-        return ResponseEntity.ok(noteService.findAllForUser(userId));
+    public ResponseEntity<Collection<NoteView>> findAll() {
+        return ResponseEntity.ok(noteService.findAllForAuthorizedUser());
     }
 
     @PostMapping
-    public ResponseEntity<NoteView> create(@PathVariable String userId, @RequestBody NoteView note) {
-        return ResponseEntity.of(noteService.create(userId, note));
+    public ResponseEntity<NoteView> create(@RequestBody NoteView note) {
+        return ResponseEntity.of(noteService.create(note));
     }
 }

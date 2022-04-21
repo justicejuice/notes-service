@@ -56,7 +56,8 @@ public class NoteServiceTest {
         Note model = ViewMapper.INSTANCE.noteViewToModel(toCreate);
 
         Mockito.when(noteRepository.save(Mockito.any())).thenReturn(model);
-        Optional<NoteView> result = testee.create(AUTHENTICATED_USER.getId(), toCreate);
+        Mockito.when(userService.getAuthenticatedUser()).thenReturn(Optional.of(AUTHENTICATED_USER));
+        Optional<NoteView> result = testee.create(toCreate);
 
         Assertions.assertThat(result).isPresent();
         Assertions.assertThat(result.get().getTitle()).isEqualTo(toCreate.getTitle());
@@ -66,10 +67,10 @@ public class NoteServiceTest {
     @Test
     @DisplayName("Should not create when user not authenticated")
     public void shouldNotCreate() {
-        Mockito.when(userService.getCurrentUserAuthorized(Mockito.any())).thenThrow(UnauthorizedException.class);
-        Assertions.assertThatExceptionOfType(UnauthorizedException.class).isThrownBy(() -> {
-            testee.create("1234", NoteView.builder().build());
-        });
+        Mockito.when(userService.getAuthenticatedUser()).thenReturn(Optional.empty());
+        Assertions.assertThatExceptionOfType(UnauthorizedException.class).isThrownBy(() ->
+                testee.create(NoteView.builder().build())
+        );
     }
 
 }

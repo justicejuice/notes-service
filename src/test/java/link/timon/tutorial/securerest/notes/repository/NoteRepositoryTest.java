@@ -76,9 +76,9 @@ public class NoteRepositoryTest {
         List<Note> result = noteRepository.findByAuthor(user);
 
         Assertions.assertThat(result).hasSize(2);
-        Assertions.assertThat(result.get(0).getAuthor()).isEqualTo(user);
+        Assertions.assertThat(result.get(0).getAuthor().getId()).isEqualTo(user.getId());
         Assertions.assertThat(result.get(0).getTitle()).isEqualTo("title 1");
-        Assertions.assertThat(result.get(1).getAuthor()).isEqualTo(user);
+        Assertions.assertThat(result.get(1).getAuthor().getId()).isEqualTo(user.getId());
         Assertions.assertThat(result.get(1).getTitle()).isEqualTo("title 2");
         Assertions.assertThat(result.get(1).getCreatedAt()).isNotNull();
     }
