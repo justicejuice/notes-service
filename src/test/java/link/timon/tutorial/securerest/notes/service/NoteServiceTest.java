@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class NoteServiceTest {
 
-    @Mock(lenient = true)
+    @Mock
     private UserService userService;
 
     @Mock
@@ -40,8 +40,6 @@ public class NoteServiceTest {
 
     @BeforeEach
     public void setupMocks() {
-        Mockito.when(this.userService.getCurrentUserAuthorized(AUTHENTICATED_USER.getId()))
-                .thenReturn(AUTHENTICATED_USER);
         AUTHENTICATED_USER.getNotes().clear();
     }
 
