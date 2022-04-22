@@ -10,6 +10,7 @@ import link.timon.tutorial.securerest.notes.domain.dto.NoteView;
 import link.timon.tutorial.securerest.notes.domain.dto.ViewMapper;
 import link.timon.tutorial.securerest.notes.repository.NoteRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,7 +41,6 @@ public class NoteService {
             throw new UnauthorizedException("You must be logged in to create a new note.");
         }
 
-
         note.setAuthor(authenticatedUser.get());
 
         updateUserNotes(authenticatedUser.get(), note);
@@ -49,22 +49,27 @@ public class NoteService {
     }
 
     /**
-     * Updates the Note of the given user.
+     * Updates given Note of the authenticated user.
      *
+     * @param noteId The id of the note to update.
      * @param noteView The NoteView to update.
      *
-     * @return The updated NoteView
+     * @return The updated NoteView.
      */
-    public Optional<NoteView> update(NoteView noteView) {
+    public Optional<NoteView> update(String noteId, NoteView noteView) {
         Optional<User> authenticatedUser = userService.getAuthenticatedUser();
-        Optional<Note> noteToUpdate = noteRepository.findById(noteView.getId());
+        Optional<Note> noteToUpdate = noteRepository.findById(noteId);
 
         if (noteToUpdate.isEmpty()) {
             throw new EntityNotFoundException(String.format("Note with id=%s does not exist!", noteView.getId()));
         }
 
-        if (authenticatedUser.isEmpty() || !authenticatedUser.get().getId().equals(noteToUpdate.get().getId())) {
+        if (authenticatedUser.isEmpty()
+                || !authenticatedUser.get().getId().equals(noteToUpdate.get().getId())
+                || !StringUtils.equals(noteId, noteView.getId())) {
+
             throw new UnauthorizedException("You are not allowed to update this note!");
+
         }
 
         noteToUpdate.get().setTitle(noteView.getTitle());

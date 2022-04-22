@@ -1,7 +1,11 @@
 package link.timon.tutorial.securerest.notes.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+
+import link.timon.tutorial.securerest.notes.common.EntityNotFoundException;
 import link.timon.tutorial.securerest.notes.common.UnauthorizedException;
 import link.timon.tutorial.securerest.notes.domain.Note;
 import link.timon.tutorial.securerest.notes.domain.User;
@@ -93,7 +97,7 @@ public class NoteServiceTest {
         when(noteRepository.findById(toUpdate.getId())).thenReturn(Optional.of(existingNote));
         when(noteRepository.save(existingNote)).thenReturn(existingNote);
 
-        Optional<NoteView> updated = testee.update(toUpdate);
+        Optional<NoteView> updated = testee.update(toUpdate.getId(), toUpdate);
 
         assertThat(updated).isPresent();
         assertThat(updated.get().getTitle()).isEqualTo("test");
@@ -106,8 +110,69 @@ public class NoteServiceTest {
         when(noteRepository.findById("1")).thenReturn(Optional.of(Note.builder().id("1").build()));
 
         assertThatExceptionOfType(UnauthorizedException.class)
-                .isThrownBy(() -> testee.update(NoteView.builder().id("1").build()))
+                .isThrownBy(() -> testee.update("1", NoteView.builder().id("1").build()))
                 .withMessage("401 UNAUTHORIZED \"You are not allowed to update this note!\"");
     }
+
+    @Test
+    @DisplayName("Should not update when note not exists.")
+    public void shouldNotUpdateWhenNoteNotExists() {
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.empty());
+        when(noteRepository.findById("1")).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(EntityNotFoundException.class)
+                .isThrownBy(() -> testee.update("1", NoteView.builder().id("1").build()))
+                .withMessage("404 NOT_FOUND \"Note with id=1 does not exist!\"");
+    }
+
+    @Test
+    @DisplayName("Should not update note when ids don't match")
+    public void shouldNotUpdateWhenIdsDontMatch() {
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.of(AUTHENTICATED_USER));
+        when(noteRepository.findById("2")).thenReturn(Optional.of(Note.builder().id("2").build()));
+
+        assertThatExceptionOfType(UnauthorizedException.class)
+                .isThrownBy(() -> testee.update("2", NoteView.builder().id("1").build()))
+                .withMessage("401 UNAUTHORIZED \"You are not allowed to update this note!\"");
+    }
+
+    @Test
+    @DisplayName("Should find all Notes for authenticated user")
+    public void shouldFindAllNotes() {
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.of(AUTHENTICATED_USER));
+        when(noteRepository.findByAuthor(AUTHENTICATED_USER)).thenReturn(List.of(
+                Note.builder().id("1").build(),
+                Note.builder().id("2").build()
+        ));
+
+        Collection<NoteView> allNotes = testee.findAllForAuthorizedUser();
+
+        assertThat(allNotes).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("Should not find all notes when user is not authenticated")
+    public void shouldNotFindAllNotes() {
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(UnauthorizedException.class)
+                .isThrownBy(() -> testee.findAllForAuthorizedUser())
+                .withMessage("401 UNAUTHORIZED \"Please login to view your notes.\"");
+    }
+
+    @Test
+    @DisplayName("Should find a note by id of authenticated user.")
+    public void shouldFindById() {
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.of(AUTHENTICATED_USER));
+        when(noteRepository.findById("1")).thenReturn(Optional.of(Note.builder().author(AUTHENTICATED_USER).id("1").build()));
+
+        Optional<NoteView> result = testee.findById("1");
+
+        assertThat(result).isPresent();
+    }
+
+    //TODO should not find by id ...
+
+
 
 }
