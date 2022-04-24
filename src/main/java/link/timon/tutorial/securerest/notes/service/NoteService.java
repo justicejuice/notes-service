@@ -1,7 +1,5 @@
 package link.timon.tutorial.securerest.notes.service;
 
-import java.util.Collection;
-import java.util.Optional;
 import link.timon.tutorial.securerest.notes.common.EntityNotFoundException;
 import link.timon.tutorial.securerest.notes.common.UnauthorizedException;
 import link.timon.tutorial.securerest.notes.domain.Note;
@@ -12,6 +10,9 @@ import link.timon.tutorial.securerest.notes.repository.NoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Service for notes.
@@ -35,15 +36,11 @@ public class NoteService {
     public Optional<NoteView> create(NoteView noteView) {
         Note note = ViewMapper.INSTANCE.noteViewToModel(noteView);
 
-        Optional<User> authenticatedUser = userService.getAuthenticatedUser();
+        User authenticatedUser = userService.getAuthenticatedUser();
 
-        if (authenticatedUser.isEmpty()) {
-            throw new UnauthorizedException("You must be logged in to create a new note.");
-        }
+        note.setAuthor(authenticatedUser);
 
-        note.setAuthor(authenticatedUser.get());
-
-        updateUserNotes(authenticatedUser.get(), note);
+        updateUserNotes(authenticatedUser, note);
 
         return Optional.ofNullable(ViewMapper.INSTANCE.noteToView(noteRepository.save(note)));
     }
@@ -57,15 +54,14 @@ public class NoteService {
      * @return The updated NoteView.
      */
     public Optional<NoteView> update(String noteId, NoteView noteView) {
-        Optional<User> authenticatedUser = userService.getAuthenticatedUser();
+        User authenticatedUser = userService.getAuthenticatedUser();
         Optional<Note> noteToUpdate = noteRepository.findById(noteId);
 
         if (noteToUpdate.isEmpty()) {
             throw new EntityNotFoundException(String.format("Note with id=%s does not exist!", noteView.getId()));
         }
 
-        if (authenticatedUser.isEmpty()
-                || !authenticatedUser.get().getId().equals(noteToUpdate.get().getId())
+        if (!StringUtils.equals(authenticatedUser.getId(), noteToUpdate.get().getId())
                 || !StringUtils.equals(noteId, noteView.getId())) {
 
             throw new UnauthorizedException("You are not allowed to update this note!");
@@ -86,13 +82,9 @@ public class NoteService {
      * @return All found NoteViews, can be empty.
      */
     public Collection<NoteView> findAllForAuthorizedUser() {
-        Optional<User> authenticatedUser = userService.getAuthenticatedUser();
+        User authenticatedUser = userService.getAuthenticatedUser();
 
-        if (authenticatedUser.isEmpty()) {
-            throw new UnauthorizedException("Please login to view your notes.");
-        }
-
-        return ViewMapper.INSTANCE.notesToViews(noteRepository.findByAuthor(authenticatedUser.get()));
+        return ViewMapper.INSTANCE.notesToViews(noteRepository.findByAuthor(authenticatedUser));
     }
 
     /**
@@ -104,13 +96,13 @@ public class NoteService {
      */
     public Optional<NoteView> findById(String noteId) {
         Optional<Note> note = noteRepository.findById(noteId);
-        Optional<User> authenticatedUser = userService.getAuthenticatedUser();
+        User authenticatedUser = userService.getAuthenticatedUser();
 
         if (note.isEmpty()) {
             throw new EntityNotFoundException(String.format("Could not find note with id=%s", noteId));
         }
 
-        if (authenticatedUser.isEmpty() || !authenticatedUser.get().getId().equals(note.get().getAuthor().getId())) {
+        if (!StringUtils.equals(authenticatedUser.getId(), note.get().getAuthor().getId())) {
             throw new UnauthorizedException("You are not allowed to view this note!");
         }
 
@@ -123,13 +115,9 @@ public class NoteService {
      * @param noteId The Id of the Note to delete.
      */
     public void delete(String noteId) {
-        Optional<User> authenticatedUser = userService.getAuthenticatedUser();
+        User authenticatedUser = userService.getAuthenticatedUser();
 
-        if (authenticatedUser.isEmpty()) {
-            throw new UnauthorizedException("You must be authenticated to delete a note.");
-        }
-
-        Optional<Note> noteOptional = authenticatedUser.get().getNotes()
+        Optional<Note> noteOptional = authenticatedUser.getNotes()
                 .stream()
                 .filter(note -> note.getId().equals(noteId))
                 .findFirst();
@@ -138,12 +126,12 @@ public class NoteService {
             throw new EntityNotFoundException(String.format("Note with id=%s not found", noteId));
         }
 
-        if (!noteOptional.get().getAuthor().getId().equals(authenticatedUser.get().getId())) {
+        if (!StringUtils.equals(noteOptional.get().getAuthor().getId(), authenticatedUser.getId())) {
             throw new UnauthorizedException("You are not allowed to remove this note!");
         }
 
-        authenticatedUser.get().getNotes().removeIf((n) -> n.getId().equalsIgnoreCase(noteId));
-        userService.save(authenticatedUser.get());
+        authenticatedUser.getNotes().removeIf((n) -> n.getId().equalsIgnoreCase(noteId));
+        userService.save(authenticatedUser);
 
         noteRepository.deleteById(noteId);
     }

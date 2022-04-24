@@ -1,7 +1,5 @@
 package link.timon.tutorial.securerest.notes.service;
 
-import java.util.Optional;
-import java.util.Set;
 import link.timon.tutorial.securerest.notes.common.EntityAlreadyExistsException;
 import link.timon.tutorial.securerest.notes.common.UnauthorizedException;
 import link.timon.tutorial.securerest.notes.domain.Role;
@@ -9,13 +7,16 @@ import link.timon.tutorial.securerest.notes.domain.User;
 import link.timon.tutorial.securerest.notes.domain.dto.UserLoginRequestDto;
 import link.timon.tutorial.securerest.notes.domain.dto.UserRegisterRequestDto;
 import link.timon.tutorial.securerest.notes.domain.dto.UserView;
+import link.timon.tutorial.securerest.notes.domain.dto.ViewMapper;
 import link.timon.tutorial.securerest.notes.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
-import link.timon.tutorial.securerest.notes.domain.dto.ViewMapper;
+
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Service for user entity.
@@ -76,34 +77,15 @@ public class UserService {
      *
      * @return The currently logged in user or empty, if it can't be received.
      */
-    public Optional<User> getAuthenticatedUser() {
+    public User getAuthenticatedUser() {
         Optional<UsernamePasswordAuthenticationToken> token = securityService.getAuthenticationToken();
 
-        if (token.isPresent()) {
-            return Optional.ofNullable((User) token.get().getPrincipal());
+        if (token.isPresent() && token.get().getPrincipal() instanceof User) {
+            return (User) token.get().getPrincipal();
         }
 
-        return Optional.empty();
-    }
-
-    /**
-     * Gets the currently logged in User and checks if he is authorized for
-     * operating of given user ids entities. If he is authorized, the User
-     * entity will be returned. If he is not authorized an Unauthorized
-     * exception will be thrown.
-     *
-     * @param userId The User Id to check.
-     *
-     * @return The user if he is authorized.
-     */
-    public User getCurrentUserAuthorized(String userId) {
-        Optional<User> currentUser = getAuthenticatedUser();
-
-        if (currentUser.isEmpty() || !StringUtils.equals(userId, currentUser.get().getId())) {
-            throw new UnauthorizedException(String.format("User witth Id=%s is not authorized for this request", userId));
-        }
-
-        return currentUser.get();
+        log.error("Something went wrong with authentication token! {}", token);
+        throw new UnauthorizedException("No authenticated User found!");
     }
 
     /**
@@ -114,9 +96,11 @@ public class UserService {
      * @throws UnauthorizedException when given userId is not the current authorized user.
      */
     void checkCurrentuserAuthorized(String userId) {
-        // This call throws unauthorized Exception if the
-        // the current user is unauthorized.
-        getCurrentUserAuthorized(userId);
+        User currentUser = getAuthenticatedUser();
+
+        if (!StringUtils.equals(userId, currentUser.getId())) {
+            throw new UnauthorizedException(String.format("User witth Id=%s is not authorized for this request", userId));
+        }
     }
 
     /**
